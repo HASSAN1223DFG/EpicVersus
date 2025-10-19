@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EpicVersus - جميع الشخصيات</title>
+  <style>
+    :root{
+      --bg1:#12002f; --bg2:#0a0015; --card:#1b1030; --accent1:#9c27b0; --accent2:#3f51b5;
+    }
+    body{
+      margin:0; font-family:"Cairo",sans-serif; background:radial-gradient(circle at top, var(--bg1), var(--bg2)); color:#fff;
+    }
+    header{background:linear-gradient(90deg,var(--accent1),var(--accent2)); padding:22px; text-align:center; font-size:28px; font-weight:700; box-shadow:0 0 20px rgba(156,39,176,0.4);}
+    .wrap{width:90%; max-width:1300px; margin:30px auto 80px;}
+    .controls{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;}
+    .filter-btn{background:transparent; border:2px solid rgba(255,255,255,0.06); color:#ddd; padding:8px 14px; border-radius:10px; cursor:pointer; transition:0.25s; font-weight:600;}
+    .filter-btn.active{background:linear-gradient(90deg,var(--accent1),var(--accent2)); box-shadow:0 6px 20px rgba(63,81,181,0.18); color:#fff; transform:translateY(-3px);}
+    .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px;}
+    .card{background:var(--card); padding:12px; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.6); text-align:center; cursor:pointer; overflow:hidden; opacity:0; transform:translateY(30px); transition:transform .4s ease, box-shadow .3s ease; border:1px solid rgba(156,39,176,0.06);}
+    .card:hover{transform:translateY(0) scale(1.03); box-shadow:0 18px 40px rgba(156,39,176,0.25);}
+    .card img{width:100%; height:180px; object-fit:cover; border-radius:10px; border:2px solid var(--accent1); box-shadow:0 6px 18px rgba(156,39,176,0.18);}
+    .card h3{margin:10px 0 6px; color:#f0d7ff;}
+    .statline{display:flex; justify-content:space-around; gap:8px; margin-top:8px; font-size:13px; color:#ddd;}
+    .badge{background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:8px;}
+    .super{margin-top:8px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); padding:8px; border-radius:10px; font-weight:700; font-size:13px; color:#fff;}
+    .show-more{margin-top:10px; display:flex; gap:8px; justify-content:center;}
+    .btn-small{padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700;}
+    .btn-detail{background:#fff;color:#3f3f3f;}
+    .btn-compare{background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#fff;}
+
+    /* modal */
+    .modal-back{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000;}
+    .modal{background:linear-gradient(180deg,#1b1030,#120023); width:90%; max-width:900px; border-radius:14px; padding:18px; box-shadow:0 30px 80px rgba(0,0,0,0.6); color:#fff; max-height:90vh; overflow:auto;}
+    .modal .top{display:flex; gap:14px; align-items:center;}
+    .modal img{width:160px;height:160px; object-fit:cover; border-radius:10px; border:3px solid var(--accent1);}
+    .modal h2{margin:0; color:#f0d7ff;}
+    .close{margin-left:auto; background:transparent; border:2px solid rgba(255,255,255,0.06); color:#fff; padding:6px 10px; border-radius:8px; cursor:pointer;}
+    .modal .section{margin-top:12px; text-align:right;}
+    .modal ul{list-style-type:'⚡ '; padding-right:10px; color:#eaeaea;}
+    .modal .meta{display:flex; gap:12px; margin-top:8px; flex-wrap:wrap;}
+    .meta .pill{background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:8px;}
+
+    footer{padding:20px; text-align:center; color:#bbb; border-top:1px solid rgba(255,255,255,0.03); margin-top:40px;}
+
+    /* reveal animation delay by index via JS class */
+    .reveal-0{animation:fadeUp .5s ease forwards .05s;}
+    .reveal-1{animation:fadeUp .5s ease forwards .10s;}
+    .reveal-2{animation:fadeUp .5s ease forwards .15s;}
+    .reveal-3{animation:fadeUp .5s ease forwards .20s;}
+    .reveal-4{animation:fadeUp .5s ease forwards .25s;}
+    .reveal-5{animation:fadeUp .5s ease forwards .30s;}
+    .reveal-6{animation:fadeUp .5s ease forwards .35s;}
+    .reveal-7{animation:fadeUp .5s ease forwards .40s;}
+
+    @keyframes fadeUp{from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+
+    @media(max-width:700px){
+      .card img{height:160px;}
+      .modal img{width:120px;height:120px;}
+    }
+  </style>
+</head>
+<body>
+
+  <header>⚡ EpicVersus - مكتبة الشخصيات</header>
+
+  <div class="wrap">
+    <div class="controls" id="filters">
+      <!-- أزرار الفلاتر ستُدرج بواسطة JS -->
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <!-- نافذة التفاصيل -->
+  <div id="modalBack" class="modal-back" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="top">
+        <img id="mImg" src="" alt="character">
+        <div>
+          <h2 id="mName">اسم الشخصية</h2>
+          <div class="meta" id="mMeta"></div>
+          <div class="super" id="mSuper"></div>
+        </div>
+        <button class="close" id="closeModal">إغلاق ✖</button>
+      </div>
+
+      <div class="section">
+        <h4>🧾 الملاحظات</h4>
+        <ul id="mNotes"></ul>
+      </div>
+
+      <div class="section">
+        <h4>✅ المميزات</h4>
+        <ul id="mPros"></ul>
+      </div>
+
+      <div class="section">
+        <h4>❌ السلبيات</h4>
+        <ul id="mCons"></ul>
+      </div>
+
+      <div style="text-align:center; margin-top:12px;">
+        <button class="btn-small btn-compare" id="modalCompare">⚔️ اذهب للمقارنة</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 EpicVersus - جميع الحقوق محفوظة</footer>
+
+  <script src="characters.js"></script>
+  <script>
+    // إنشاء الفلاتر والأقسام ديناميكياً من بيانات characters.js
+    const grid = document.getElementById('grid');
+    const filters = document.getElementById('filters');
+    const worlds = Object.keys(characters); // ["marvel","dc","harrypotter","anime"]
+    const worldLabels = { marvel:"Marvel", dc:"DC", harrypotter:"Harry Potter", anime:"Anime" };
+
+    // إنشاء أزرار الفلترة
+    worlds.forEach((w,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn' + (i===0 ? ' active' : '');
+      btn.textContent = worldLabels[w] + ' (' + characters[w].length + ')';
+      btn.dataset.world = w;
+      btn.addEventListener('click', ()=> {
+        document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderGrid(w);
+      });
+      filters.appendChild(btn);
+    });
+
+    // renderGrid(world)
+    function renderGrid(world){
+      grid.innerHTML = '';
+      const list = characters[world] || [];
+      list.forEach((ch, idx)=>{
+        const card = document.createElement('div');
+        card.className = 'card reveal-' + (idx % 8);
+        card.innerHTML = `
+          <img src="${ch.image}" alt="${ch.name}">
+          <h3>${ch.name}</h3>
+          <div class="statline">
+            <div class="badge">💪 ${ch.power}</div>
+            <div class="badge">⚡ ${ch.speed}</div>
+            <div class="badge">🧠 ${ch.intelligence}</div>
+          </div>
+          <div class="super">${ch.superpower}</div>
+          <div class="show-more">
+            <button class="btn-small btn-detail">تفاصيل</button>
+            <button class="btn-small btn-compare">قارن</button>
+          </div>
+        `;
+        // عند الضغط على البطاقة أو تفصيل
+        grid.appendChild(card);
+
+        // أحداث الأزرار
+        const detailBtn = card.querySelector('.btn-detail');
+        const compareBtn = card.querySelector('.btn-compare');
+
+        detailBtn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          openModal(ch, world);
+        });
+        // تقود لصفحة compare مع تمرير العالم. المستخدم يختار الشخصيتين هناك.
+        compareBtn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          // نزّل المستخدم إلى صفحة compare مع تمرير متغير world
+          window.location.href = `compare.html?world=${world}`;
+        });
+
+        // فتح التفاصيل بالنقر على البطاقة نفسها
+        card.addEventListener('click', ()=> openModal(ch, world));
+      });
+    }
+
+    // Modal handlers
+    const modalBack = document.getElementById('modalBack');
+    const mImg = document.getElementById('mImg');
+    const mName = document.getElementById('mName');
+    const mMeta = document.getElementById('mMeta');
+    const mSuper = document.getElementById('mSuper');
+    const mNotes = document.getElementById('mNotes');
+    const mPros = document.getElementById('mPros');
+    const mCons = document.getElementById('mCons');
+    const closeModalBtn = document.getElementById('closeModal');
+    const modalCompareBtn = document.getElementById('modalCompare');
+
+    function openModal(ch, world){
+      mImg.src = ch.image;
+      mName.textContent = ch.name;
+      mSuper.textContent = '💥 القوة الخارقة: ' + (ch.superpower || '---');
+      mMeta.innerHTML = `<div class="pill">💪 ${ch.power}</div><div class="pill">⚡ ${ch.speed}</div><div class="pill">🧠 ${ch.intelligence}</div><div class="pill">🏷️ ${worldLabels[world]}</div>`;
+      // notes/pros/cons may be arrays - تأكد من الوجود
+      mNotes.innerHTML = (ch.notes||[]).map(n=>`<li>${n}</li>`).join('');
+      mPros.innerHTML = (ch.pros||[]).map(p=>`<li>${p}</li>`).join('');
+      mCons.innerHTML = (ch.cons||[]).map(c=>`<li>${c}</li>`).join('');
+
+      modalCompareBtn.onclick = ()=> {
+        window.location.href = `compare.html?world=${world}`;
+      };
+
+      modalBack.style.display = 'flex';
+      modalBack.setAttribute('aria-hidden', 'false');
+    }
+
+    closeModalBtn.addEventListener('click', ()=> { modalBack.style.display='none'; modalBack.setAttribute('aria-hidden','true'); });
+    modalBack.addEventListener('click', (e)=> { if(e.target === modalBack){ modalBack.style.display='none'; modalBack.setAttribute('aria-hidden','true'); } });
+
+    // العرض الافتراضي للقسم الأول
+    if(worlds.length>0) renderGrid(worlds[0]);
+  </script>
+</body>
+</html>
